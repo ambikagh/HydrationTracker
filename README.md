@@ -6,9 +6,9 @@ This application was developed as part of my Internet of Things coursework.
 Hydration Tracker is an IoT based application that automatically tracks user’s hydration level. Every time a user consumes water or beverages, amount of liquid consumed is recorded. Data is sent to cloud, where the business logic resides on a server-less framework. Received data is processed by the framework and written to database for further reference.
 
 Application comprises of three major components:
-1.  IoT device equipped with sensors to measure weight of the liquid consumed (hydration tracker device)
-2.	Business logic that handles device data and user data
-3.	Database that stores the processed data
+1. IoT device equipped with sensors to measure weight of the liquid consumed (hydration tracker device)
+2.	Server side business logic to handle device data and user data
+3.	Database to store the processed data
 
 Let us look at each component in detail.
 
@@ -16,34 +16,42 @@ Let us look at each component in detail.
 
 ### 1. Collect all the hardware components required to set up the device
 Following components are required to set up the device:
-a.	Raspberry Pi 3 kit used as IoT device
-b.	Force sensor to measure the weight of liquid
-c.	Analog to digital converter MCP3008, converts analog output from force sensor to digital output
-d.	Led for alerting the user
-e.	330 ohm and 10k resistors for LED and sensor respectively
-f.	Breadboard and Pi Cobbler breakout box
-g.	Soldering gun, wires for connection
+ 1.	Raspberry Pi 3 kit used as IoT device
+ 2.	Force sensor to measure the weight of liquid
+ 3.	Analog to digital converter MCP3008, converts analog output from force sensor to digital output
+ 4.	Led for alerting the user
+ 5.	330 ohm and 10k resistors for LED and sensor respectively
+ 6.	Breadboard and Pi Cobbler breakout box
+ 7.	Soldering gun, wires for connection
 
 Connection diagram and explanation can be found in the below link:
 https://acaird.github.io/computers/2015/01/07/raspberry-pi-fsr
-### 2. Write program to read sensor value 
-Complete code for reading sensor value can be found in device_code.zip. We used code from https://github.com/acaird/raspi-scale as a starting point (it wasn’t a functioning though). To make the code functional we had to clean up lot of redundant code and rewrite some part of it. The original code uses polling method to read values from sensor. However, this method of constant polling is very inefficient and battery powered devices suffer from power drain. Alternatively, we can use interrupt based method to read sensor values. Sensor value output can be given to a pin which is configured as an interrupt pin. Processor is interrupted only when sensor has a new output. We could not implement interrupts due to lack of time (planned for future).
-Note: If the HW interfacing is new to you, try to turn LED on off first. It will give some confidence before working of force sensor. Follow the link below
-https://projects.raspberrypi.org/en/projects/physical-computing/4
+
+### 2. Setup sensor module to read force sensor value 
+
+> Before setting up sensor module let us try to turn LED on off using our Pi. That should prepare us for the harder task of setting up sensor module. Follow the below link to turn LED on and off using Raspberry Pi
+> https://projects.raspberrypi.org/en/projects/physical-computing/4 
+
+Code for reading sensor value can be found in folder ```device_code```. For the sensor module used https://github.com/acaird/raspi-scale code as a starting point. I had to clean up lot of code and tweak the program little bit to make it functional. 
+>Sensor module uses polling method to read values from sensor. However, this method of constant polling is very inefficient on battery powered devices as it can drain the device very fast. Alternatively, we can use interrupt based method to read sensor values. Sensor value output can be given to a pin which is configured as an interrupt pin. Processor is interrupted only when sensor has a new output. Feel free to implement interrupt driven sensor module. 
+
 ### 3. Set up the connection and read sensor value
-After following the instruction provided in the link connected components must look something similar to this.
+After setting up the device and sensor module based on the instruction provided in the link connected components must look something similar to this.
 
 Figure 1: Connection diagram
+
 To read the sensor value from force sensor, run the command ‘python scale-raw.py’. You will be able to view the output something like this
  
 Figure 2: Sensor outputs
-Step4: Download AWS Sdk for python and test the connection in AWS IoT console
+
+
+### 4. Download AWS Sdk for python and test the connection in AWS IoT console
 To connect our IoT device to the cloud we will be using AWS IoT device SDK for Python. Follow the below steps to complete this section
 1.	Follow the below tutorial to set up your Raspberry Pi as the IoT device https://docs.aws.amazon.com/iot/latest/developerguide/iot-sdk-setup.html 
 2.	Download the AWS IoT Device SDK for Python from the following link https://github.com/aws/aws-iot-device-sdk-python 
 3.	Test your set up by sending messages from your device to the cloud and receiving messages on your device from cloud. Test the setup using AWS IoT Console
 
-Step5: Merge the AWS IoT device SDK code with sensor module code
+### 5. Merge the AWS IoT device SDK code with sensor module code
 
 
 
@@ -61,7 +69,7 @@ Figure 4: Messages received in ‘waterConsumed’ topic
 
 
 
-Setting up the server 
+## Setting up the server 
 For the hydration tracker project, server side business logic is implemented using AWS lambda functions which are core to serverless computing paradigm. To know more about serverless computing and applications, please refer to the link below.
 https://aws.amazon.com/serverless/ 
 We recognized 3 main functionalities of the server in this project. 
