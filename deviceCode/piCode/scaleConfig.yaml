@@ -1,0 +1,205 @@
+# The settings for the RaspberryPi and its circuitry
+
+name: raspberryPiConfig
+
+# This defines the analog-to-digital converter connections to the
+# PiCobbler; the circuitry is documented at:
+# http://acaird.github.io/computers/2015/01/07/raspberry-pi-fsr/
+
+ADCtoCobbler:
+    SPICLK : 18
+    SPIMISO: 23
+    SPIMOSI: 24
+    SPICS  : 25
+
+
+# this will print things to the console; fun for watching, useful for
+# debugging, but not needed for everyday use
+
+debug: 1
+
+
+# Which port on the analog-to-digital converter is the force sensitive
+# resistor attached to?
+
+adcPortWithFSR: 0
+
+
+# how much jitter should we tolerate?  The FSR is pretty chatty, so
+# setting something reasonable here will keep too many status updates
+# from happening; 9 is the about same as a 1% change, which seems
+# reasonable
+
+tolerance: 16
+
+
+# this is about a 40% reduction from the 0--1024 range of the ADC's
+# interpretation of the FSR; changes outside of this range are weird -
+# probably someone took all of the coffee beans off the scale and we
+# don't really want to report that
+
+maxChange: -410
+
+
+# What is the minimum FSR reading that will trigger notification?
+
+getMoarBeansNow: 300
+
+# Low bean alerts should be sent on the following channels; these are
+# limited to 'plotly', 'twitter', and 'email' in this version
+
+alertChannels:
+  - twitter
+  - email
+
+# how many seconds to wait between checking the 'scale'; this can
+# probably be set at 300 (5 minutes) or 600 (10 minutes) or 1800 (30
+# minutes), but setting it at a very small number (like 2) is fun and
+# lets lots of updates happen so there is something to see as it runs
+
+checkTime: 2
+
+# paths to credentials files
+
+plotlyCredsFile:  ./plotlyCreds.sec
+
+# Regardless of changes in the weight of the beans, update things (see
+# the next block) on this frequency (in seconds); note that this is
+# the number of seconds after scale.py was started; so if you start it
+# at 9:30am one day, and set this to 86400, an update will take place
+# every day at 9:30am until scale.py stops
+
+updateTime: 86400
+
+# The periodic updates (described above) should be sent on the
+# following channels; these are limited to 'plotly', 'twitter', and
+# 'email' in this version
+
+updateChannels:
+  - plotly
+  - twitter
+
+---
+# The settings for sending email for notifications of being low on
+# beans; these are also, for the moment, in emailConfig.yaml, but it's
+# nicer to have them in one file, I think.
+
+name: emailConfiguration
+
+
+# the SMTP server used to send email; if the SMTP server contains
+# 'gmail' then further information is read from the file specified in
+# 'gmailCredsFile' so the Python script can authenticate to Google to send
+# the message via Google's SMTP servers.  Listing more than one SMTP
+# server is convenient because the last one wins, but now we can
+# switch SMTP servers by adjusting the order of the 'smtpServer' lines
+
+smtpServer: localhost
+smtpServer: smtp.gmail.com:587
+
+
+# If the smtpServer contains the string 'gmail', we need a set of
+# GMail credentials in order to send the email via Google's SMTP
+# servers; those credentials are stored in the file referenced by
+# 'gmailCredsFile'
+
+gmailCredsFile: ./gmailCreds.sec
+
+
+# Set the to and from addresses for the email; the fromAddr doesn't
+# much matter, the toAddr determines who gets the warnings about a low
+# bean situation
+#
+# if you want text messages, try these addresses:
+#      Boost Mobile: PhoneNumber@myboostmobile.com
+#      T-Mobile: PhoneNumber@tmomail.net
+#      Virgin Mobile: PhoneNumber@vmobl.com
+#      Cingular: PhoneNumber@cingularme.com
+#      Sprint Nextel: PhoneNumber@messaging.sprintpcs.com
+#      Verizon: PhoneNumber@vtext.com
+#      Nextel: PhoneNumber@messaging.nextel.com
+#      US Cellular: PhoneNumber@email.uscc.net
+#      SunCom: PhoneNumber@tms.suncom.com
+#      Powertel: PhoneNumber@ptel.net
+#      AT&T (Cingular): PhoneNumber@txt.att.net
+#      Alltel: PhoneNumber@message.alltel.com
+#      Metro PCS: PhoneNumber@MyMetroPcs.com
+# there are more at: http://www.example-code.com/python/sms_send.asp
+
+fromAddr:   acaird@gmail.com
+toAddr:     acaird@gmail.com
+
+
+# This is the email subject and message that will be used for low bean
+# alerts.  The subject is a simple text string.  The message body can
+# have multiple lines and it has two interpreted variables: {0} is the
+# sensor percentage value; {1} is the current date.  You don't have to
+# include either one of those in your message.  If you do include them
+# they don't have to be in order, but you can't include {1} without
+# including {0}.
+emailAlertSubject: Low Bean Alert!
+emailAlertMessage: >-
+  This is your friendly BeanBot letting you know that it looks like
+  you are low on beans.
+
+
+  According to the bean weight sensor, you have {0}% of beans left.
+
+
+  It is {1} and I hope you have time to get more beans soon.
+
+
+  Happy coffeeing!
+
+emailUpdateSubject: Coffee Bean Status
+emailUpdateMessage: >-
+  According to your weight sensor, you have {0}% of beans left.
+
+
+  Hello, this is your friendly BeanBot updating you on your coffee
+  bean status.  You have {0}% left, so there is no alert at this time,
+  but I will let you know if you get low (based on your configured
+  options).
+
+  Happy coffeeing!
+
+---
+# The settings for sending Twitter notifications of being low on
+# beans
+
+name: twitterConfiguration
+
+# This file is formatted like:
+#
+#    consumerKey:  vvmHoFoEpghTNe2lXd7xuDtHt
+#    consumerSec:  8nbYc3UvLwKGYfPOU6DMMaNvFmmVI3JU4kn0mO0PwwEtuyMfKC
+#    accessToken:  3013528785-s5qtZeIOMz2yFbUAxxn8wVtJmKhJrVYjUUkkL5k
+#    accessSecret: VMbQlr5Rk2fOqmQGlCSK5IHSiuZ3b03fjMgprUjj9a6WL
+#
+# and that information is from Twitter's API page, and no, those
+# aren't working values.
+
+twitterCredsFile: ./twitterCreds.sec
+
+# The twitter message can be anything; {0} is the percentage of beans,
+# {1} is the current date and time.  You don't have to use either of
+# those, but note that Twitter will check for duplicate messages, so
+# tweeting the same thing will result in an error from Twitter; adding
+# the date/time stamp gets around that.  Also, the combination of the
+# Message and the Hashtags can't be more than 140 characters long or
+# it won't be sent, so use with caution.  The date string is always 20
+# characters long.
+
+twitterUpdateMessage: "The bean inventory is {0}% at {1}."
+twitterUpdateHashtags:
+  - caen
+  - beanbot
+  - coffebeans
+
+twitterAlertMessage: "OH NOES! The bean inventory dangerously low! ({0}% at {1})"
+twitterAlertHashtags:
+  - caen
+  - beanbot
+  - coffebeans
+  - buymoarcoffeebeans
+  - coffeeemergency
