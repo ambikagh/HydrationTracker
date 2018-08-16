@@ -36,13 +36,14 @@ Code for reading sensor value can be found in folder ```device_code```. For the 
 >Sensor module uses polling method to read values from sensor. However, this method of constant polling is very inefficient on battery powered devices as it can drain the device very fast. Alternatively, we can use interrupt based method to read sensor values. Sensor value output can be given to a pin which is configured as an interrupt pin. Processor is interrupted only when sensor has a new output. Feel free to implement interrupt driven sensor module. 
 
 ### 3. Set up the connection and read sensor value
-After setting up the device and sensor module based on the instruction provided in the link connected components must look something similar to this.
-![Connection Diagram](https://ambikagh.github.com/img/connection_diagram.jpg)
+After setting up the device and sensor module based on the instruction provided in the link connected components must look something similar to diagram below.
+
+![Connection Diagram](https://github.com/ambikagh/HydrationTracker/blob/master/img/connection_diagram.jpg)
 Figure 1: Connection diagram
 
 To read the sensor value from force sensor, run the command ‘python scale-raw.py’. You will be able to view the output something like this
 
-
+![Sensor outputs](https://github.com/ambikagh/HydrationTracker/blob/master/img/sensor_outputs.jpg)
 Figure 2: Sensor outputs
 
 
@@ -54,7 +55,7 @@ To connect our IoT device to the cloud we will be using AWS IoT device SDK for P
 
 ### 5. Merge the AWS IoT device SDK code with sensor module code
 
-                                      
+![Overview Diagram](https://github.com/ambikagh/HydrationTracker/blob/master/img/overview_diagram.jpg)  
 Figure 3: Overview diagram
 
 In this step, we will merge the Sdk code with Sensor module code that we have tested separately in the above sections. 
@@ -62,6 +63,7 @@ Note: Device code for raspberry pi and sensor module code is present in zipped f
 Now you will be able to call the sensor module from sdk and read the sensor values. After doing some pre-processing and calibration of the sensed values, AWS sdk module will send the data to cloud by publishing to MQTT topic ‘waterConsumed’. Overview diagram given in Figure 3 explains the control and data flow in hydration tracker application.
 Messages can be viewed in AWS IoT console by subscribing to ‘waterConsumed’ topic.
 
+![Message Recieved](https://github.com/ambikagh/HydrationTracker/blob/master/img/messages_received.jpg)
 Figure 4: Messages received in ‘waterConsumed’ topic
 
 
@@ -98,13 +100,17 @@ Hydration tracker function is triggered upon the reception of messages to the to
 •	Pulls the latest data from water_table corresponding to the user
 •	Adds the weight and water_table weight, writes the new weight back to database
 
-
+![Hydration Tracker Function](https://github.com/ambikagh/HydrationTracker/blob/master/img/hydratracker_rule1.jpg)
+![Hydration Tracker Function](https://github.com/ambikagh/HydrationTracker/blob/master/img/hydratracker_rule2.jpg)
 Figure 5: Rule to invoke lambda function hydration tracker upon reception of message in ‘waterConsumed’ topic
 
 ### Lambda function resetwaterconsumed
 > Trigger: Cloudwatch Events (Every day 12:00 AM)
 > Invokes: AWS RDS
 
+
+![Reset Water Consumed](https://github.com/ambikagh/HydrationTracker/blob/master/img/reset_water_consumed_rule1.jpg)
+![Reset Water Consumed](https://github.com/ambikagh/HydrationTracker/blob/master/img/reset_water_consumed_rule2.jpg)
 Figure 6 reset water consumed lambda 
 
 When the function resetwaterconsumed is triggered via scheduled event trigger, the function resets the water consumed to 0.
@@ -112,9 +118,11 @@ Note: inorder to set cloudwatch events, we have to set up Rules in Cloudwatch Ma
  
 ### Lambda function notifyuser
 > Trigger: Cloudwatch event scheduled at 2 minutes (for demo), in real world may be once every 30 min
-> Invoke: AWS IoT and AWS SNS
-
+  Invoke: AWS IoT and AWS SNS
+  
+![Notify user](https://github.com/ambikagh/HydrationTracker/blob/master/img/notify_user_1.jpg)
 Figure 7 Notify user lambda
+
 When the notifyuser function is invoked it performs following actions
 1.	Read the last water consumed event from water_table
 2.	Check if the time elapsed since last event is > T (3 minutes for the purpose of demo)
@@ -123,10 +131,11 @@ Figure 7 shows the behavior upon invoking of notifyuser function
  
 > Notice that in the following Figure 8 LED alerts start appearing only when there are no events for 3 or more minutes. Last event observed in waterConsumed topic is at 8:39AM. So alerts are issued when the lambda function does not observe events for more than 3 minutes.  
 
+![LED alerts](https://github.com/ambikagh/HydrationTracker/blob/master/img/led_alerts.png)
 Figure 8 LED alerts
 
 
- 
+![Testing Hydration Tracker Function](https://github.com/ambikagh/HydrationTracker/blob/master/img/testing_hydrationtracker.png) 
 Figure 9 Testing hydrationtracker function
 
 ## Setting up database and tables
@@ -153,5 +162,5 @@ At the moment, there are two types of alerts/notifications are sent to the user.
 1.	Led alert: led alert is sent by publishing to ledAlert/<userid> topic from notifyuser lambda function. IoT device subscribes to the ledAlert/<userid> topic and whenever there is a message in this topic, led is switched on off for 10s. This is an unobtrusive way of notifying user to get hydrated. Basically user need not check mobile phones or wearable inorder to consume water. 
 2.	Text SMS is sent to the user using AWS SNS topics
 
-
+![Notifications](https://github.com/ambikagh/HydrationTracker/blob/master/img/notifications.png)
 
